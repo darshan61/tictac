@@ -127,8 +127,8 @@ function setCells(colIdx,rowIdx,turn, withComputer){
             endGame();
         };
     }
-    if(isgridFull()){
-        showMessage("Game has been completed without any winner, please try again");   
+    if(isgridFull() && !isGameWon()){
+        showMessage("Game has been completed without any winner, please click on reset button to restart the game");   
         endGame();
     }
     turn = toggle(turn);
