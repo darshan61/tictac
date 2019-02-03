@@ -17,17 +17,23 @@
 * 
 */
 
-const grid = [];
+var grid = [];
 const GRID_LENGTH = 3;
 let turn = 'X';
+var visited = [];
+let withComputer = true;
+let gameClosed = false;
 
 function initializeGrid() {
     for (let colIdx = 0;colIdx < GRID_LENGTH; colIdx++) {
         const tempArray = [];
+        const tempVisited = [];
         for (let rowidx = 0; rowidx < GRID_LENGTH;rowidx++) {
             tempArray.push(0);
+            tempVisited.push(false);
         }
         grid.push(tempArray);
+        visited.push(tempVisited);
     }
 }
 
@@ -71,12 +77,14 @@ function renderMainGrid() {
 }
 
 function onBoxClick() {
-    var rowIdx = this.getAttribute("rowIdx");
-    var colIdx = this.getAttribute("colIdx");
-    let newValue = 1;
-    grid[colIdx][rowIdx] = newValue;
-    renderMainGrid();
-    addClickHandlers();
+    if (!gameClosed){
+        var rowIdx = this.getAttribute("rowIdx");
+        var colIdx = this.getAttribute("colIdx");
+        hideMessage();
+        setCells(colIdx, rowIdx, turn, withComputer);
+        renderMainGrid();
+        addClickHandlers();
+    }
 }
 
 function addClickHandlers() {
@@ -84,8 +92,120 @@ function addClickHandlers() {
     for (var idx = 0; idx < boxes.length; idx++) {
         boxes[idx].addEventListener('click', onBoxClick, false);
     }
+    var reset = document.getElementById("reset");
+    reset.addEventListener('click',onResetClick, false);
 }
 
-initializeGrid();
-renderMainGrid();
-addClickHandlers();
+function setCells(colIdx,rowIdx,turn, withComputer){
+ if(visited[colIdx][rowIdx] === true || isgridFull()){
+        // alert("This cell is already taken or game is finished, please try a different cell or reset the game");
+        showMessage("This cell is already taken or game is finished, please try a different cell or reset the game");
+        return false;
+    }
+    // hideMessage();
+    visited[colIdx][rowIdx] = true;
+    let newValue = 0;
+    if(turn === 'X'){
+        newValue = 1;
+        grid[colIdx][rowIdx] = newValue;
+    }else if(turn === 'O' && !withComputer){
+        newValue = 2;
+        grid[colIdx][rowIdx] = newValue;
+    }
+    renderMainGrid();
+    if (isGameWon()){
+        showMessage("Player "+ turn + " has won the game");
+        endGame();
+    };
+    // console.log(turn);
+    if (withComputer && !isGameWon()){
+        setRandomCell();
+        renderMainGrid();
+        turn = toggle(turn);
+        if (isGameWon()){
+            showMessage("Player "+ turn +" has won the game");
+            endGame();
+        };
+    }
+    if(isgridFull()){
+        showMessage("Game has been completed without any winner, please try again");   
+        endGame();
+    }
+    turn = toggle(turn);
+}
+
+function toggle(turn){
+    return turn === 'X'? 'O':'X';
+}
+
+function showMessage(message){
+        document.getElementById("message").textContent = message;
+        document.getElementById("message").style.display = "";
+}
+
+function hideMessage(){
+    document.getElementById("message").style.display = "none";
+}
+
+function isGameWon(){
+let won = false;
+    if ((grid[0][0]!=0 && grid[0][0] === grid[0][1] && grid[0][1] === grid[0][2]) ||    
+        (grid[0][0]!=0 && grid[0][0] === grid[1][1] && grid[1][1] === grid[2][2]) ||   
+        (grid[0][0]!=0 && grid[0][0] === grid[1][0] && grid[1][0] === grid[2][0]) ||   
+        (grid[1][0]!=0 && grid[1][0] === grid[1][1] && grid[1][1] === grid[1][2]) ||   
+        (grid[2][0]!=0 && grid[2][0] === grid[2][1] && grid[2][1] === grid[2][2]) ||   
+        (grid[0][1]!=0 && grid[0][1] === grid[1][1] && grid[1][1] === grid[2][1]) ||   
+        (grid[0][2]!=0 && grid[0][2] === grid[1][2] && grid[1][2] === grid[2][2]) ||
+        (grid[0][2]!=0 && grid[0][2] === grid[1][1] && grid[1][1] === grid[2][0])             
+        )
+        won = true;
+    return won;
+}
+
+function isgridFull(){
+    for (let colIdx = 0;colIdx < GRID_LENGTH; colIdx++) {
+        for (let rowidx = 0; rowidx < GRID_LENGTH;rowidx++) {
+            if(visited[colIdx][rowidx] === false)
+                return false;
+        }
+    }
+    return true;
+}
+
+function setRandomCell(){
+    // debugger;
+    var col = Math.floor(Math.random()* GRID_LENGTH);
+    var row = Math.floor(Math.random()* GRID_LENGTH);
+    if(visited[col][row] === true && !isgridFull()){
+        setRandomCell();
+    }else {
+        visited[col][row] = true;
+        grid[col][row] = 2;
+        return;
+    }
+}
+
+function endGame(){
+    gameClosed = true;
+}
+
+function onResetClick(){
+    reset();
+}
+
+function reset(){
+    grid = [];
+    visited = [];
+    turn = 'X';
+    gameClosed = false;
+    initializeGrid();
+    renderMainGrid();
+    addClickHandlers();
+    hideMessage();
+}
+
+reset();
+// initializeGrid();
+// renderMainGrid();
+// addClickHandlers();
+

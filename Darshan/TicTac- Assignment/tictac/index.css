@@ -50,3 +50,16 @@
     border-radius: 5px;
     line-height: 100px;
 }
+
+.message {
+    text-align: center;
+    text-transform: capitalize;
+    margin-bottom: 10;
+}
+
+.reset {
+    margin: 10 48%;
+    cursor: pointer;
+    justify-content: center;
+    padding: auto;
+}
